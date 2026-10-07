@@ -3,5 +3,8 @@
 .RData
 .Ruserdata
 work/
+tests/
+validations/
+sandbox/check.R
 *.o
 *.so
