@@ -1,10 +1,15 @@
 source("sandbox/setup.R")
 set.seed(123)
 nu = 4
-y = 2 + 1.5 * rt(1000, df = nu)
+y = sim_t(1000, c(2, 2.25), nu)
 par = c(0, 1)
 
-fits = rbind(naive = em_t(par, y, nu = nu, epsilon = 1e-16), vec = em_t_vec(par, y, nu = nu, epsilon = 1e-16), cpp = em_t_cpp(par, y, nu = nu, epsilon = 1e-16), BFGS = fit_t(par, y, nu)$par, nlminb = fit_t(par, y, nu, method = "nlminb")$par)
+fits = rbind(naive = em_t(par, y, nu = nu, epsilon = 1e-16),
+  vec = em_t_vec(par, y, nu = nu, epsilon = 1e-16),
+  cpp = em_t_cpp(par, y, nu = nu, epsilon = 1e-16),
+  GD = fit_t_gd(par, y, nu)$par,
+  BFGS = fit_t(par, y, nu)$par,
+  nlminb = fit_t(par, y, nu, method = "nlminb")$par)
 print(fits)
 
 tr = em_tracer(y, nu)
