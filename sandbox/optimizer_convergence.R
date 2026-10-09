@@ -18,6 +18,16 @@ for (name in names(funs)) {
   out[[name]] = data.frame(method = name, time = trace$time, ll = trace$ll)
 }
 
+rows = list(data.frame(time = 0, ll = loglik_t(par, y, nu)))
+t0 = proc.time()[["elapsed"]]
+cb = function() {
+  q = parent.frame()$par
+  rows[[length(rows) + 1]] <<- data.frame(time = proc.time()[["elapsed"]] - t0, ll = loglik_t(c(q[1], exp(q[2])), y, nu))
+}
+fit = fit_t_gd(par, y, nu, cb = cb)
+trace = do.call(rbind, rows)
+out[["GD"]] = data.frame(method = "GD", time = trace$time, ll = trace$ll)
+
 for (method in c("BFGS", "nlminb")) {
   rows = list(data.frame(time = 0, ll = loglik_t(par, y, nu)))
   t0 = proc.time()[["elapsed"]]
