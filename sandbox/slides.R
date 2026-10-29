@@ -5,10 +5,15 @@ b = read.csv("figures/benchmarks.csv")
 b$criterion = factor(b$criterion, c("par", "ll"), c("Parameter change", "Likelihood change"))
 p = ggplot(b, aes(n, ms, color = version)) + geom_line() + geom_point() + scale_x_log10() + scale_y_log10() + facet_wrap(~ criterion) + labs(x = "n", y = "Time [ms]", color = NULL)
 ggsave("figures/benchmark_slides.png", p, width = 10, height = 4, dpi = 180)
-pdat = subset(read.csv("figures/profiling.csv"), version == "Naive")
-pdat$fun = factor(pdat$fun, c("<GC>", "m_step", "e_step"), c("GC", "M-step", "E-step"))
-p = ggplot(pdat, aes(fun, percent)) + geom_col(fill = "steelblue") + coord_flip() + labs(x = NULL, y = "Self time [%]")
-ggsave("figures/profile_slides.png", p, width = 4.5, height = 3.5, dpi = 180)
+file = "work/profiles/Naive.out"
+png("figures/profile_slides.png", width = 810, height = 630, res = 180)
+par(mar = c(4, 5, 1, 1), las = 1, cex = 1.15)
+vals = summaryRprof(file)$by.self
+idx = c('"e_step"', '"m_step"', '"<GC>"')
+barplot(rev(vals[idx, "self.pct"]), horiz = TRUE,
+  names.arg = c("GC", "M-step", "E-step"),
+  xlab = "Self time [%]", col = "steelblue")
+dev.off()
 set.seed(123)
 v = 2
 y = 2 + 1.5 * rt(5000, df = v)
