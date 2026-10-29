@@ -1,4 +1,4 @@
-m_step_t = function(w, y, nu) {
+m_step_t = function(w, y, v) {
   sw = 0
   sy = 0
   for (i in seq_along(y)) {
@@ -10,5 +10,5 @@ m_step_t = function(w, y, nu) {
   for (i in seq_along(y)) {
     s = s + w[i] * (y[i] - mu)^2
   }
-  c(mu = mu, sigma2 = s / (length(y) * nu))
+  c(mu = mu, sigma2 = s / (length(y) * v))
 }

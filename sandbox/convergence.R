@@ -2,25 +2,25 @@ source("sandbox/setup.R")
 library(ggplot2)
 theme_set(theme_bw(base_size = 12))
 set.seed(123)
-nu = 2
-y = 2 + 1.5 * rt(5000, df = nu)
+v = 2
+y = 2 + 1.5 * rt(5000, df = v)
 par = c(0, 1)
-ref = em_t_vec(par, y, nu = nu, epsilon = 1e-24)
-ll_ref = loglik_t(ref, y, nu)
+ref = em_t_vec(par, y, v = v, epsilon = 1e-24)
+ll_ref = loglik_t(ref, y, v)
 out = list()
 fits = list()
 
 # Equal epsilon has different accuracy under the two stopping rules.
 for (criterion in c("par", "ll")) {
   for (eps in c(1e-6, 1e-10, 1e-14)) {
-    tr = em_tracer(y, nu)
-    fit = em_t_vec(par, y, nu = nu, epsilon = eps, criterion = criterion, cb = tr$tracer)
+    tr = em_tracer(y, v)
+    fit = em_t_vec(par, y, v = v, epsilon = eps, criterion = criterion, cb = tr$tracer)
     trace = tr$trace()
     trace$criterion = criterion
     trace$epsilon = factor(eps)
     trace$gap = pmax(ll_ref - trace$ll, 1e-12)
     out[[length(out) + 1]] = trace
-    fits[[length(fits) + 1]] = data.frame(criterion = criterion, epsilon = eps, iterations = max(trace$n), mu = fit[1], sigma2 = fit[2], ll_gap = ll_ref - loglik_t(fit, y, nu), par_error = sqrt(sum((fit - ref)^2)))
+    fits[[length(fits) + 1]] = data.frame(criterion = criterion, epsilon = eps, iterations = max(trace$n), mu = fit[1], sigma2 = fit[2], ll_gap = ll_ref - loglik_t(fit, y, v), par_error = sqrt(sum((fit - ref)^2)))
   }
 }
 out = do.call(rbind, out)

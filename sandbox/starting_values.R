@@ -2,19 +2,19 @@ source("sandbox/setup.R")
 library(ggplot2)
 theme_set(theme_bw(base_size = 12))
 set.seed(123)
-nu = 2
-y = 2 + 1.5 * rt(1000, df = nu)
+v = 2
+y = 2 + 1.5 * rt(1000, df = v)
 starts = list("c(0, 1)" = c(0, 1), "c(6, 0.5)" = c(6, 0.5), "c(-4, 8)" = c(-4, 8))
 out = list()
 fits = list()
 
 for (name in names(starts)) {
-  tr = em_tracer(y, nu)
-  fit = em_t_vec(starts[[name]], y, nu = nu, epsilon = 1e-16, cb = tr$tracer)
+  tr = em_tracer(y, v)
+  fit = em_t_vec(starts[[name]], y, v = v, epsilon = 1e-16, cb = tr$tracer)
   trace = tr$trace()
   trace$start = name
   out[[name]] = trace
-  fits[[name]] = data.frame(start = name, iterations = max(trace$n), mu = fit[1], sigma2 = fit[2], ll = loglik_t(fit, y, nu))
+  fits[[name]] = data.frame(start = name, iterations = max(trace$n), mu = fit[1], sigma2 = fit[2], ll = loglik_t(fit, y, v))
 }
 out = do.call(rbind, out)
 fits = do.call(rbind, fits)

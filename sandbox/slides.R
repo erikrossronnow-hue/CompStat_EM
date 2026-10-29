@@ -10,16 +10,16 @@ pdat$fun = factor(pdat$fun, c("<GC>", "m_step", "e_step"), c("GC", "M-step", "E-
 p = ggplot(pdat, aes(fun, percent)) + geom_col(fill = "steelblue") + coord_flip() + labs(x = NULL, y = "Self time [%]")
 ggsave("figures/profile_slides.png", p, width = 4.5, height = 3.5, dpi = 180)
 set.seed(123)
-nu = 2
-y = 2 + 1.5 * rt(5000, df = nu)
-ref = em_t_vec(c(0, 1), y, nu = nu, epsilon = 1e-24)
+v = 2
+y = 2 + 1.5 * rt(5000, df = v)
+ref = em_t_vec(c(0, 1), y, v = v, epsilon = 1e-24)
 rows = list()
 for (criterion in c("par", "ll")) {
   for (eps in c(1e-6, 1e-10, 1e-14)) {
-    tr = em_tracer(y, nu)
-    fit = em_t_vec(c(0, 1), y, nu = nu, epsilon = eps, criterion = criterion, cb = tr$tracer)
+    tr = em_tracer(y, v)
+    fit = em_t_vec(c(0, 1), y, v = v, epsilon = eps, criterion = criterion, cb = tr$tracer)
     d = tr$trace()
-    rows[[length(rows) + 1]] = data.frame(d, rule = criterion, eps = factor(eps), gap = pmax(loglik_t(ref, y, nu) - d$ll, 1e-12))
+    rows[[length(rows) + 1]] = data.frame(d, rule = criterion, eps = factor(eps), gap = pmax(loglik_t(ref, y, v) - d$ll, 1e-12))
   }
 }
 d = do.call(rbind, rows)
@@ -28,12 +28,12 @@ ends = d[!duplicated(d[c("rule", "eps")], fromLast = TRUE), ]
 p = ggplot(d, aes(n, gap, group = eps)) + geom_line(color = "grey60") + geom_point(data = ends, aes(color = eps), size = 3) + scale_y_log10() + facet_wrap(~ rule) + labs(x = "Iteration", y = "Likelihood gap", color = "epsilon")
 ggsave("figures/convergence_slides.png", p, width = 10, height = 4, dpi = 180)
 set.seed(123)
-y = 2 + 1.5 * rt(1000, df = nu)
+y = 2 + 1.5 * rt(1000, df = v)
 starts = list("(0, 1)" = c(0, 1), "(6, 0.5)" = c(6, 0.5), "(-4, 8)" = c(-4, 8))
 rows = list()
 for (name in names(starts)) {
-  tr = em_tracer(y, nu)
-  fit = em_t_vec(starts[[name]], y, nu = nu, epsilon = 1e-16, cb = tr$tracer)
+  tr = em_tracer(y, v)
+  fit = em_t_vec(starts[[name]], y, v = v, epsilon = 1e-16, cb = tr$tracer)
   d = tr$trace()
   rows[[name]] = rbind(data.frame(n = d$n, start = name, par = "mu", val = d$mu), data.frame(n = d$n, start = name, par = "sigma2", val = d$sigma2))
 }
@@ -45,13 +45,13 @@ d$method[d$method == "EM Rcpp steps"] = "EM"
 p = ggplot(d, aes(time, gap, color = method)) + geom_step() + scale_y_log10() + labs(x = "Time [s]", y = "Likelihood gap", color = NULL)
 ggsave("figures/optimizer_slides.png", p, width = 10, height = 4, dpi = 180)
 set.seed(123)
-nu = 4
-y = sim_t(1000, c(2, 2.25), nu)
+v = 4
+y = sim_t(1000, c(2, 2.25), v)
 par = c(0, 1)
-fits = rbind(EM = em_t_vec(par, y, nu = nu, epsilon = 1e-20), GD = fit_t_gd(par, y, nu)$par, BFGS = fit_t(par, y, nu)$par, nlminb = fit_t(par, y, nu, method = "nlminb")$par)
+fits = rbind(EM = em_t_vec(par, y, v = v, epsilon = 1e-20), GD = fit_t_gd(par, y, v)$par, BFGS = fit_t(par, y, v)$par, nlminb = fit_t(par, y, v, method = "nlminb")$par)
 write.csv(data.frame(method = rownames(fits), fits, row.names = NULL), "figures/estimates_slides.csv", row.names = FALSE)
 phat = fits[1, ]
-info = list(Observed = obs_fisher_t(phat, y, nu), Empirical = emp_fisher_t(phat, y, nu), Expected = fisher_t(phat, length(y), nu), SEM = sem_fisher_t(phat, y, nu))
+info = list(Observed = obs_fisher_t(phat, y, v), Empirical = emp_fisher_t(phat, y, v), Expected = fisher_t(phat, length(y), v), SEM = sem_fisher_t(phat, y, v))
 out = do.call(rbind, lapply(names(info), function(name) data.frame(method = name, i11 = info[[name]][1, 1], i12 = info[[name]][1, 2], i22 = info[[name]][2, 2], se_mu = sqrt(solve(info[[name]])[1, 1]), se_sigma2 = sqrt(solve(info[[name]])[2, 2]))))
 write.csv(out, "figures/fisher_slides.csv", row.names = FALSE)
 print(fits)

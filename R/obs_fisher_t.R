@@ -1,1 +1,1 @@
-obs_fisher_t = function(par, y, nu) numDeriv::hessian(function(par) -loglik_t(par, y, nu), par)
+obs_fisher_t = function(par, y, v) numDeriv::hessian(function(par) -loglik_t(par, y, v), par)

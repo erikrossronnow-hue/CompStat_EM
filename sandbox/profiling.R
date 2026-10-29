@@ -3,8 +3,8 @@ library(ggplot2)
 theme_set(theme_bw(base_size = 12))
 dir.create("work/profiles", recursive = TRUE, showWarnings = FALSE)
 set.seed(123)
-nu = 4
-y = 2 + 1.5 * rt(20000, df = nu)
+v = 4
+y = 2 + 1.5 * rt(20000, df = v)
 par = c(0, 1)
 funs = list(Naive = em_t, Rcpp_ll = function(...) em_t_cpp(..., criterion = "ll"))
 out = list()
@@ -12,12 +12,12 @@ out = list()
 # Repeat for two seconds so the profiler can sample these short calls.
 for (name in names(funs)) {
   fit = funs[[name]]
-  fit(par, y, nu = nu, epsilon = 1e-12)
+  fit(par, y, v = v, epsilon = 1e-12)
   file = paste0("work/profiles/", name, ".out")
   p = profvis::profvis({
     t0 = proc.time()[["elapsed"]]
     while (proc.time()[["elapsed"]] - t0 < 2) {
-      fit(par, y, nu = nu, epsilon = 1e-12)
+      fit(par, y, v = v, epsilon = 1e-12)
     }
   }, interval = 0.01, prof_output = file)
   htmlwidgets::saveWidget(p, paste0("work/profiles/", name, ".html"), selfcontained = FALSE, libdir = "libs")

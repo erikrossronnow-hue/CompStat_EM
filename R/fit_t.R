@@ -1,7 +1,7 @@
-fit_t = function(par, y, nu, method = "BFGS", epsilon = 1e-12) {
+fit_t = function(par, y, v, method = "BFGS", epsilon = 1e-12) {
   q = c(par[1], log(par[2]))
-  nll = function(q) neg_loglik_t(q, y, nu)
-  grad = function(q) grad_neg_loglik_t(q, y, nu)
+  nll = function(q) neg_loglik_t(q, y, v)
+  grad = function(q) grad_neg_loglik_t(q, y, v)
   if (method == "nlminb") {
     # Disable PORT's premature singular-convergence test.
     fit = nlminb(q, nll, gradient = grad, control = list(rel.tol = epsilon, sing.tol = 0, iter.max = 10000))

@@ -2,48 +2,48 @@ source("sandbox/setup.R")
 library(ggplot2)
 theme_set(theme_bw(base_size = 12))
 set.seed(123)
-nu = 4
-y = 2 + 1.5 * rt(50000, df = nu)
+v = 4
+y = 2 + 1.5 * rt(50000, df = v)
 par = c(0, 1)
-ref = em_t_cpp(par, y, nu = nu, epsilon = 1e-24)
-ll_ref = loglik_t(ref, y, nu)
+ref = em_t_cpp(par, y, v = v, epsilon = 1e-24)
+ll_ref = loglik_t(ref, y, v)
 funs = list("EM Rcpp steps" = em_t_cpp)
 out = list()
 
 # These traces include callback overhead; benchmarks.R times untraced fits.
 for (name in names(funs)) {
-  tr = em_tracer(y, nu)
-  fit = funs[[name]](par, y, nu = nu, epsilon = 1e-20, cb = tr$tracer)
+  tr = em_tracer(y, v)
+  fit = funs[[name]](par, y, v = v, epsilon = 1e-20, cb = tr$tracer)
   trace = tr$trace()
   out[[name]] = data.frame(method = name, time = trace$time, ll = trace$ll)
 }
 
-rows = list(data.frame(time = 0, ll = loglik_t(par, y, nu)))
+rows = list(data.frame(time = 0, ll = loglik_t(par, y, v)))
 t0 = proc.time()[["elapsed"]]
 cb = function() {
   q = parent.frame()$par
-  rows[[length(rows) + 1]] <<- data.frame(time = proc.time()[["elapsed"]] - t0, ll = loglik_t(c(q[1], exp(q[2])), y, nu))
+  rows[[length(rows) + 1]] <<- data.frame(time = proc.time()[["elapsed"]] - t0, ll = loglik_t(c(q[1], exp(q[2])), y, v))
 }
-fit = fit_t_gd(par, y, nu, cb = cb)
+fit = fit_t_gd(par, y, v, cb = cb)
 trace = do.call(rbind, rows)
 out[["GD"]] = data.frame(method = "GD", time = trace$time, ll = trace$ll)
 
 for (method in c("BFGS", "nlminb")) {
-  rows = list(data.frame(time = 0, ll = loglik_t(par, y, nu)))
+  rows = list(data.frame(time = 0, ll = loglik_t(par, y, v)))
   t0 = proc.time()[["elapsed"]]
   nll = function(q) {
-    ll = loglik_t(c(q[1], exp(q[2])), y, nu)
+    ll = loglik_t(c(q[1], exp(q[2])), y, v)
     rows[[length(rows) + 1]] <<- data.frame(time = proc.time()[["elapsed"]] - t0, ll = ll)
     -ll / length(y)
   }
-  grad = function(q) -colSums(score_t(c(q[1], exp(q[2])), y, nu)) * c(1, exp(q[2])) / length(y)
+  grad = function(q) -colSums(score_t(c(q[1], exp(q[2])), y, v)) * c(1, exp(q[2])) / length(y)
   q = c(par[1], log(par[2]))
   if (method == "BFGS") {
     fit = optim(q, nll, gr = grad, method = method, control = list(reltol = 1e-12, maxit = 10000))
   } else {
     fit = nlminb(q, nll, gradient = grad, control = list(rel.tol = 1e-12, sing.tol = 0, iter.max = 10000))
   }
-  rows[[length(rows) + 1]] = data.frame(time = proc.time()[["elapsed"]] - t0, ll = loglik_t(c(fit$par[1], exp(fit$par[2])), y, nu))
+  rows[[length(rows) + 1]] = data.frame(time = proc.time()[["elapsed"]] - t0, ll = loglik_t(c(fit$par[1], exp(fit$par[2])), y, v))
   trace = do.call(rbind, rows)
   out[[method]] = data.frame(method = method, time = trace$time, ll = cummax(trace$ll))
 }
