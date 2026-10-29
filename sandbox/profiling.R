@@ -6,7 +6,7 @@ set.seed(123)
 nu = 4
 y = 2 + 1.5 * rt(20000, df = nu)
 par = c(0, 1)
-funs = list(Naive = em_t, Vectorized = em_t_vec, Rcpp = em_t_cpp, Rcpp_ll = function(...) em_t_cpp(..., criterion = "ll"))
+funs = list(Naive = em_t, Rcpp_ll = function(...) em_t_cpp(..., criterion = "ll"))
 out = list()
 
 # Repeat for two seconds so the profiler can sample these short calls.

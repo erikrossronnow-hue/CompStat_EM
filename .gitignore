@@ -2,9 +2,14 @@
 .Rhistory
 .RData
 .Ruserdata
+*.Rproj
+figures/
 work/
 tests/
 validations/
 sandbox/check.R
+sandbox/simulation.R
+R/fit_complete_t.R
+R/loglik_complete_t.R
 *.o
 *.so

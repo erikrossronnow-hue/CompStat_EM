@@ -1,3 +1,6 @@
+dir.create("figures", showWarnings = FALSE)
+dir.create("work", showWarnings = FALSE)
+
 for (p in list.files("src", pattern = "[.]cpp$", full.names = TRUE)) {
   Rcpp::sourceCpp(p)
 }

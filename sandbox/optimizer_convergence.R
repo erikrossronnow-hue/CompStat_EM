@@ -7,7 +7,7 @@ y = 2 + 1.5 * rt(50000, df = nu)
 par = c(0, 1)
 ref = em_t_cpp(par, y, nu = nu, epsilon = 1e-24)
 ll_ref = loglik_t(ref, y, nu)
-funs = list("EM naive" = em_t, "EM vectorized" = em_t_vec, "EM Rcpp steps" = em_t_cpp)
+funs = list("EM Rcpp steps" = em_t_cpp)
 out = list()
 
 # These traces include callback overhead; benchmarks.R times untraced fits.
@@ -50,6 +50,5 @@ for (method in c("BFGS", "nlminb")) {
 out = do.call(rbind, out)
 out$gap = pmax(ll_ref - out$ll, 1e-10)
 write.csv(out, "figures/optimizer_convergence.csv", row.names = FALSE)
-plotdat = rbind(transform(out, view = "All methods"), transform(subset(out, method != "EM naive"), view = "Faster methods"))
-p = ggplot(plotdat, aes(time, gap, color = method)) + geom_step() + scale_y_log10() + facet_wrap(~ view, scales = "free_x") + labs(x = "Elapsed time (seconds)", y = "Best attained log-likelihood gap (floor at 1e-10)", color = NULL, title = "Convergence against real time on the same 50,000 observations", subtitle = "One traced run per method, including tracing overhead")
+p = ggplot(out, aes(time, gap, color = method)) + geom_step() + scale_y_log10() + labs(x = "Time [s]", y = "Likelihood gap", color = NULL)
 ggsave("figures/optimizer_convergence.png", p, width = 11, height = 5, dpi = 160)
